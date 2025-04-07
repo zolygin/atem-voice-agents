@@ -16,7 +16,7 @@ From your command line:
 # Login to the Azure Developer CLI
 azd auth login
 
-# Provisioon all the resources with the azure dev cli
+# Provision all the resources with the azure dev cli
 # The following values should work:
 # location=northeurope
 # aiResourceLocation=swedencentral
@@ -53,7 +53,7 @@ Deployment complete. Application URI: <YOUR_APP>.azurecontainerapps.io
 
 ## Local Development
 
-Running this application locally, still requires some Azure Services in the cloud, so make sure to [set up the Azure environment](#set-up-the-azure-anvironment) first.
+Running this application locally, still requires some Azure Services in the cloud, so make sure to [set up the Azure environment](#set-up-the-azure-environment) first.
 
 ### Setup the local environment
 
@@ -133,4 +133,4 @@ Based on this solution accelerator: [on-the-road copilot](https://github.com/Azu
 
 ---
 
-**Trademarks:** This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
+**Trademarks:** This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft’s Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party’s policies.
