@@ -51,6 +51,10 @@ When successful, you will see the following output with the URL of the deployed 
 Deployment complete. Application URI: <YOUR_APP>.azurecontainerapps.io
 ```
 
+## Cloud Infrastructure
+
+![Azure Architecture](architecture.png)
+
 ## Local Development
 
 Running this application locally, still requires some Azure Services in the cloud, so make sure to [set up the Azure environment](#set-up-the-azure-environment) first.
