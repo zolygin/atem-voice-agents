@@ -6,17 +6,15 @@ One-click deploy Azure Solution Accelerator for Call Center Automation with Open
 
 #### Features:
 
-- Directly talk to the AI through the web interface
-- Request a phone call to talk to the AI via telephone
+- Directly talk to the AI Agent through the web interface
+- Request a phone call to talk to the AI Agent via telephone
 - Ask questions about Azure products
 - Interrupt the bot anytime
 - Customizable knowledge base and system prompt
 
 #### What can I ask?
 
-For this demo, the bot is able to answer questions about Microsoft Azure products, like Azure App Service, Azure Container Apps, and Azure Container Registry but its knowledge can be customized.
-
-Here is some inspiration for questions you can ask the bot:
+For this demo, the bot is able to answer questions about Microsoft Azure products, like Azure App Service, Azure Container Apps, and Azure Container Registry but its knowledge can be customized. Here is some inspiration for questions you can ask the bot:
 
 > Which pricing tier of Azure App Service supports custom domains?
 
