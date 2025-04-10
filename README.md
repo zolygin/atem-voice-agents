@@ -1,8 +1,26 @@
 # Realtime Call Center Solution Accelerator
 
-One-click deploy Azure Solution Accelerator for Call Center Automation with OpenAI real-time and Azure Communication Service. This solution accelerator provides a reference implementation for an AI assisted call center solution that uses Azure Communication Services to provide a voice channel for customers to interact with. The bot is able to answer questions about Microsoft Azure products for demo purposes.
+One-click deploy Azure Solution Accelerator for Call Center Automation with OpenAI Realtime Models and Azure Communication Services. This Solution Accelerator provides a reference implementation for an AI-assisted call center solution that uses Azure Communication Services to provide a phone-based voice channel for customers to interact with.
 
 ![Screenshot](screenshot.png)
+
+#### Features:
+
+- Directly talk to the AI through the web interface
+- Request a phone call to talk to the AI via telephone
+- Ask questions about Azure products
+- Interrupt the bot anytime
+- Customizable knowledge base and system prompt
+
+#### What can I ask?
+
+For this demo, the bot is able to answer questions about Microsoft Azure products, like Azure App Service, Azure Container Apps, and Azure Container Registry but its knowledge can be customized.
+
+Here is some inspiration for questions you can ask the bot:
+
+> Which pricing tier of Azure App Service supports custom domains?
+
+> What is the difference between scaling up and scaling out in Azure App Services?
 
 ## Get it running
 
@@ -123,6 +141,20 @@ Start the application
 ```bash
 python src/app/app.py
 ```
+
+## Customization
+
+You can customize the knowledge base and the system prompt of the bot.
+
+## Knowledge base
+
+The knowledge base is stored in the `data` folder. After running the deployment script, the contents of this folder will be copied to the Azure Storage Account from where it is indexed and vectorized in the Azure AI Search service.
+
+To customize the knowledge base, you can add or remove files from the `data` folder and [re-run the deployment script](#deploy-the-application).
+
+## System prompt
+
+By default, the [hardcoded system prompt](src/app/system_prompt.md) is used. You can customize the system prompt by placing a file named `system_prompt.md` in the `prompt` container of the Azure Storage Account. If this file exists, it will be used instead of the hardcoded system prompt.
 
 ---
 
