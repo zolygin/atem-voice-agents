@@ -35,10 +35,16 @@ At the moment, the configuration of Azure Communication Services phone number is
 
 ### Deploy the application
 
-To deploy the application, you can use the following script:
+To deploy the application, you can use the script provided in the `azd-hooks` folder. This script will build and deploy the user interface and the backend API. Before running the script, make sure you have the Azure CLI and the Azure Communication Services extension installed.
 
 ```bash
-echo "get and set the value for AZURE_ENV_NAME"
+az extension add --name communication
+```
+
+Run the script with the following commands:
+
+```bash
+# Get and set the value for AZURE_ENV_NAME
 source <(azd env get-values | grep AZURE_ENV_NAME)
 
 # Building and deploying the user interface and the backend API
