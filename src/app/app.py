@@ -133,6 +133,7 @@ async def create_app():
     
     if (caller is not None):
         app.router.add_post("/acs", caller.outbound_call_handler)
+        app.router.add_post("/acs/incoming", caller.inbound_call_handler)
 
     return app
 
