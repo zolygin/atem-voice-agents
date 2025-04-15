@@ -57,7 +57,7 @@ To enable inbound calls, you will also need to add a webhook to the Event Grid S
 1. Give a name to the event subcription, e.g. **receive-call**
 1. In the dropdown list **Filter to Event Types**, select **Incoming Call**
 1. Set **Endpoint Type** to **Webhook**
-1. Click **Configure an endpoint**, add the full endpoint of your application to `/acs/incoming`, and click **create**
+1. Click **Configure an endpoint**, add `<YOUR_APP>.azurecontainerapps.io/acs/incoming`, and click **create**
 
 ### Deploy the application
 
