@@ -2,6 +2,26 @@ const toggleButton = document.getElementById('toggleButton');
 const callButton = document.getElementById('callButton');
 const statusMessage = document.getElementById('statusMessage');
 const reportDiv = document.getElementById('report');
+const sourcePhoneNumber = document.getElementById('sourcePhoneNumber');
+
+// Fetch and display source phone number
+async function fetchSourcePhoneNumber() {
+    try {
+        const response = await fetch('/source-phone-number');
+        const data = await response.json();
+        if (data.phoneNumber) {
+            sourcePhoneNumber.textContent = `or call me at: ${data.phoneNumber}`;
+        }
+        else {
+            sourcePhoneNumber.textContent = 'Inbound calls are not enabled yet.';
+        }
+    } catch (error) {
+        console.error('Error fetching source phone number:', error);
+    }
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', fetchSourcePhoneNumber);
 
 let isRecording = false;
 let websocket = null;

@@ -204,3 +204,12 @@ form button {
 .dropdown-container label {
   color: #333;
 }
+
+.phone-number-display {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  color: #333;
+}
