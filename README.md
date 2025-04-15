@@ -50,6 +50,15 @@ At the moment, the configuration of Azure Communication Services phone number is
 1. Follow the instructions to purchase a phone number
 1. Add an `ACS_SOURCE_NUMBER=xxx` environment variable to the `.azure/xxx/.env` file with the phone number
 
+To enable inbound calls, you will alson need to add a webhook to the Event Grid System Topic resource. 
+
+1. Go to the [Azure Portal](https://portal.azure.com) and navigate to the **Event Grid System Topic** resource that has been created
+1. In the left menu, select **Event Subscription**  and then click the **+ Event Subscription** button
+1. Give a name to the event subcription, e.g. **receive-call**
+1. In the dropdown list **Filter to Event Types**, select **Incoming Call**
+1. Set **Endpoint Type** to **Webhook**
+1. Click **Configure an endpoint**, add the full endpoint of your application to `/acs/incoming`, and click **create**
+
 ### Deploy the application
 
 To deploy the application, you can use the script provided in the `azd-hooks` folder. This script will build and deploy the user interface and the backend API. Before running the script, make sure you have the Azure CLI and the Azure Communication Services extension installed.
