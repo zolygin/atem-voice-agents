@@ -52,7 +52,7 @@ At the moment, the configuration of Azure Communication Services phone number is
 
    **Note:** The phone number must be in E.164 format, e.g. `+49123456789`. When copying it from the Azure Portal using the copy button, it will be in the right format.
 
-   <img src="assets/copy-number-hint.png" width="600" />
+   <img src="assets/copy-number-hint.png" width="400" />
 
 ### Deploy the application
 
