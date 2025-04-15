@@ -18,3 +18,4 @@ output primaryConnectionString string = communicationService.listKeys().primaryC
 #disable-next-line outputs-should-not-contain-secrets
 output primaryKey string = communicationService.listKeys().primaryConnectionString
 output communicationServiceName string = communicationServiceName
+output location string = communicationService.location
