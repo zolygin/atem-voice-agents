@@ -122,6 +122,10 @@ async def create_app():
         else:
             return web.Response(text="Outbound calling is not configured")
 
+    async def get_source_phone_number(request):
+        phone_number = os.environ.get("ACS_SOURCE_NUMBER")
+        return web.json_response({"phoneNumber": phone_number})
+
     # Register the routes
     app = web.Application()
     app.router.add_get('/', index)
@@ -130,9 +134,11 @@ async def create_app():
     app.router.add_get("/realtime", websocket_handler)
     app.router.add_get("/realtime-acs", websocket_handler_acs)
     app.router.add_post('/update-voice', update_voice)
+    app.router.add_get('/source-phone-number', get_source_phone_number)
     
     if (caller is not None):
         app.router.add_post("/acs", caller.outbound_call_handler)
+        app.router.add_post("/acs/incoming", caller.inbound_call_handler)
 
     return app
 

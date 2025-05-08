@@ -40,9 +40,12 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01
   properties: {
     model: deployment.model
   }
+  dependsOn: [
+    account
+  ]
 }]
 
 output openaiEndpoint string = account.properties.endpoint
-output openaiKey string = listKeys(account.id, '2022-10-01').key1
+output openaiKey string = listKeys(account.id, account.apiVersion).key1
 output openaiName string = account.name
 output location string = account.location

@@ -51,8 +51,13 @@
         <article id="2" class="side-by-side">
           <h3>On your phone</h3>
           <form onsubmit="event.preventDefault();">
-            <input type="text" id="phonenumber" placeholder="Enter phone number e.g. +49123456789" />
-            <button id="callButton" class="black-button">Call my phone</button>
+            <input type="text" id="phonenumber" placeholder="Your phone number e.g. +49123456789" />
+            <button id="callButton" class="black-button">Receive a call from us</button>
+            <p>or</p>
+            <button id="incomingCallButton" class="black-button">
+              Call us directly
+              <span id="sourcePhoneNumber"></span>
+            </button>
           </form>
           <div id="statusMessage"></div>
           <pre id="report"></pre>

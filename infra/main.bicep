@@ -268,7 +268,15 @@ module communicationService 'core/communicationservice/communication-services.bi
   }
 }
 
-
+module eventGrid './core/eventgrid/eventgrid.bicep' = {
+  name: 'eventgrid'
+  scope: resourceGroup
+  params: {
+    communicationServiceName: communicationService.outputs.communicationServiceName
+    location: communicationService.outputs.location
+    tags: tags
+  }
+}
 
 module aiSearchIndexDeploymentScript 'br/public:avm/res/resources/deployment-script:0.4.0' = {
   name: 'aiSearchIndexDeploymentScript'
@@ -288,11 +296,6 @@ module aiSearchIndexDeploymentScript 'br/public:avm/res/resources/deployment-scr
     scriptContent: loadTextContent('scripts/setupindex.ps1')
     arguments: '-index \\"${index}\\" -indexer \\"${indexer}\\" -datasource \\"${dataSource}\\" -skillset \\"${skillset}\\" -searchServiceName \\"${searchService.outputs.name}\\" -dataSourceContainerName \\"${storageContainerName}\\" -dataSourceConnectionString \\"ResourceId=${storage.outputs.resourceId};\\" -indexName \\"${indexName}\\" -AzureOpenAIResourceUri \\"${openai.outputs.openaiEndpoint}\\" -indexerEmbeddingModelId \\"${embedModel}\\" -embeddingModelName \\"${embedModel}\\" -searchEmbeddingModelId \\"${embedModel}\\"'
   }
-}
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: storageAccountName
-  scope: resourceGroup
 }
 
 // Outputs
