@@ -187,6 +187,7 @@ By default, the [hardcoded system prompt](src/app/system_prompt.md) is used. You
 - [Carlos Raul Garcia](https://www.linkedin.com/in/carlosgarcialalicata/)
 - [Sasa Juratovic](https://www.linkedin.com/in/sasajuratovic/)
 - [Richard Lagrange](https://www.linkedin.com/in/richard-lagrange/)
+- [Thibo Rosemplatt](https://github.com/thiborose)
 - [Sanjay Singh](https://www.linkedin.com/in/san360/)
 - [Robin-Manuel Thiel](https://www.linkedin.com/in/robinmanuelthiel/)
 - [Yimi Wang](https://www.linkedin.com/in/yimiwang/)
