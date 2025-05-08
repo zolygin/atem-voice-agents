@@ -2,7 +2,7 @@
 
 One-click deploy Azure Solution Accelerator for Call Center Automation with OpenAI Realtime Models and Azure Communication Services. This Solution Accelerator provides a reference implementation for an AI-assisted call center solution that uses Azure Communication Services to provide a phone-based voice channel for customers to interact with an AI Agent.
 
-![Screenshot](screenshot.png)
+![Screenshot](assets/screenshot.png)
 
 #### Features:
 
@@ -48,7 +48,11 @@ At the moment, the configuration of Azure Communication Services phone number is
 1. In the left menu, select **Phone numbers** and then click the **Get** button
 1. Select a Country or region and choose **Toll free** as your number type
 1. Follow the instructions to purchase a phone number
-1. Add an `ACS_SOURCE_NUMBER=xxx` environment variable to the `.azure/xxx/.env` file with the phone number
+1. Add an `ACS_SOURCE_NUMBER=+xxx` environment variable to the `.azure/xxx/.env` file with the phone number
+
+   **Note:** The phone number must be in E.164 format, e.g. `+49123456789`. When copying it from the Azure Portal using the copy button, it will be in the right format.
+
+   <img src="assets/copy-number-hint.png" width="400" />
 
 ### Deploy the application
 
@@ -87,7 +91,7 @@ To enable inbound calls, you will also need to add a Web Hook to the Event Grid 
 
 ## Cloud Infrastructure
 
-![Azure Architecture](architecture.png)
+![Azure Architecture](assets/architecture.png)
 
 ## Local Development
 
