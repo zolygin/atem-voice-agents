@@ -198,7 +198,8 @@ By default, the [hardcoded system prompt](src/app/system_prompt.md) is used. You
 
 ## Related content
 
-Based on this solution accelerator: [on-the-road copilot](https://github.com/Azure-Samples/on-the-road-copilot)
+- This project was based on [Azure-Samples/on-the-road-copilot](https://github.com/Azure-Samples/on-the-road-copilot)
+- For a more sophisticated full call center solution on Azure, check out [microsoft/call-center-ai](https://github.com/microsoft/call-center-ai)
 
 ---
 
