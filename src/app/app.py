@@ -10,13 +10,15 @@ from backend.azure import get_azure_credentials, fetch_prompt_from_azure_storage
 from backend.rtmt import RTMiddleTier
 from backend.acs import AcsCaller
 from azure.core.credentials import AzureKeyCredential
-from backend.tools.rag.rag_tools import report_grounding_tool, search_tool
+from backend.tools.rag.rag_tools import report_grounding_tool, search_tool, initialize_rag_tools
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("voicerag")
 
 async def create_app():
-    load_dotenv()
+    # The .env file is located in .azure/azd-atem/.env
+    dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".azure", "azd-atem", ".env")
+    load_dotenv(dotenv_path=dotenv_path)
 
     azure_credentials = get_azure_credentials(os.environ.get("AZURE_TENANT_ID"))
     caller: Optional[AcsCaller] = None
@@ -26,8 +28,30 @@ async def create_app():
     llm_deployment = os.environ.get("AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME")
     llm_key = os.environ.get("AZURE_OPENAI_API_KEY")
     llm_credential = azure_credentials if not llm_key else AzureKeyCredential(llm_key)
+    
+    print(f"DEBUG: llm_endpoint={llm_endpoint}")
+    print(f"DEBUG: llm_deployment={llm_deployment}")
+    print(f"DEBUG: llm_key={llm_key}")
+
     if not llm_endpoint or not llm_deployment or not llm_credential:
         raise ValueError("LLM connection or authentication error. Check environment variables.")
+
+    # Initialize RAG tools with Supabase and OpenAI credentials
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_service_role_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+    azure_openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    azure_openai_version = os.environ.get("AZURE_OPENAI_VERSION")
+    azure_openai_embedding_model = os.environ.get("AZURE_OPENAI_EMBEDDING_MODEL")
+
+    initialize_rag_tools(
+        supabase_url=supabase_url,
+        supabase_service_role_key=supabase_service_role_key,
+        openai_api_key=openai_api_key,
+        azure_openai_endpoint=azure_openai_endpoint,
+        azure_openai_version=azure_openai_version,
+        azure_openai_embedding_model=azure_openai_embedding_model
+    )
 
     # Register the Azure Communication Services
     acs_source_number = os.environ.get("ACS_SOURCE_NUMBER")

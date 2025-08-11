@@ -1,16 +1,25 @@
 import os
 from typing import Any
 from supabase import create_client, Client
+from openai import AzureOpenAI
+from pypdf import PdfReader
 from backend.tools.tools import Tool, ToolResult, ToolResultDirection
 
-# Initialize Supabase client
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+def initialize_supabase_client(supabase_url: str, supabase_service_role_key: str) -> Client:
+    """Initializes and returns a Supabase client."""
+    if not supabase_url or not supabase_service_role_key:
+        raise ValueError("Supabase URL and Service Role Key must be provided.")
+    return create_client(supabase_url, supabase_service_role_key)
 
-if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-    raise ValueError("Supabase URL and Service Role Key must be set in environment variables.")
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+def initialize_openai_client(api_key: str, azure_endpoint: str, api_version: str) -> AzureOpenAI:
+    """Initializes and returns an Azure OpenAI client."""
+    if not all([api_key, azure_endpoint, api_version]):
+        raise ValueError("OpenAI API Key, Azure Endpoint, and API Version must be provided.")
+    return AzureOpenAI(
+        api_key=api_key,
+        azure_endpoint=azure_endpoint,
+        api_version=api_version
+    )
 
 _search_tool_schema = {
     "type": "function",
@@ -32,29 +41,22 @@ _search_tool_schema = {
 }
 
 async def _search_tool(
+    supabase_client: Client,
+    openai_client: AzureOpenAI,
     table_name: str,
     embedding_field: str,
     content_field: str,
     identifier_field: str,
+    embedding_model: str,
     args: Any) -> ToolResult:
 
     query_text = args['query']
     print(f"Searching for '{query_text}' in Supabase table '{table_name}'.")
 
-    # TODO: Generate embedding for query_text using OpenAI embedding model
-    # For now, this is a placeholder. You'll need to integrate OpenAI's embedding API here.
-    # Example:
-    # from openai import AsyncOpenAI
-    # openai_client = AsyncOpenAI(api_key=os.environ.get("AZURE_OPENAI_API_KEY"), azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"), api_version=os.environ.get("AZURE_OPENAI_VERSION"))
-    # embedding_response = await openai_client.embeddings.create(input=query_text, model=os.environ.get("AZURE_OPENAI_EMBEDDING_MODEL"))
-    # query_embedding = embedding_response.data[0].embedding
+    embedding_response = await openai_client.embeddings.create(input=query_text, model=embedding_model)
+    query_embedding = embedding_response.data[0].embedding
 
-    # Placeholder for query_embedding (replace with actual embedding generation)
-    query_embedding = [0.0] * 1536 # Assuming 1536 dimensions for text-embedding-3-large
-
-    # Perform vector similarity search in Supabase
-    # This assumes you have a 'vector' column in your table and pgvector extension enabled
-    response = supabase.rpc(
+    response = supabase_client.rpc(
         'match_documents',
         {
             'query_embedding': query_embedding,
@@ -79,8 +81,8 @@ async def _report_grounding_tool(args: Any) -> ToolResult:
     return ToolResult({"sources": []}, ToolResultDirection.TO_CLIENT)
 
 
-def search_tool(table_name: str, embedding_field: str, content_field: str, identifier_field: str) -> Tool:
-    return Tool(schema=_search_tool_schema, target=lambda args: _search_tool(table_name, embedding_field, content_field, identifier_field, args))
+def search_tool(supabase_client: Client, openai_client: AzureOpenAI, table_name: str, embedding_field: str, content_field: str, identifier_field: str, embedding_model: str) -> Tool:
+    return Tool(schema=_search_tool_schema, target=lambda args: _search_tool(supabase_client, openai_client, table_name, embedding_field, content_field, identifier_field, embedding_model, args))
 
 def report_grounding_tool() -> Tool:
     return Tool(schema=_search_tool_schema, target=lambda args: _report_grounding_tool(args))
