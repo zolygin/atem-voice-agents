@@ -4,14 +4,13 @@ from pathlib import Path
 from typing import Optional
 from aiohttp import web
 from dotenv import load_dotenv
-from backend.tools.rag.ai_search import report_grounding_tool, search_tool
 from backend.helpers import load_prompt_from_markdown
 from backend.rtmt import RTMiddleTier
 from backend.azure import get_azure_credentials, fetch_prompt_from_azure_storage
 from backend.rtmt import RTMiddleTier
 from backend.acs import AcsCaller
 from azure.core.credentials import AzureKeyCredential
-from azure.search.documents.aio import SearchClient
+from backend.tools.rag.rag_tools import report_grounding_tool, search_tool
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("voicerag")
@@ -20,7 +19,6 @@ async def create_app():
     load_dotenv()
 
     azure_credentials = get_azure_credentials(os.environ.get("AZURE_TENANT_ID"))
-    search_client: Optional[SearchClient] = None
     caller: Optional[AcsCaller] = None
 
     # Load LLM connection and authentication
@@ -30,17 +28,6 @@ async def create_app():
     llm_credential = azure_credentials if not llm_key else AzureKeyCredential(llm_key)
     if not llm_endpoint or not llm_deployment or not llm_credential:
         raise ValueError("LLM connection or authentication error. Check environment variables.")
-
-    # Load Azure AI Search connection and authentication
-    search_key = os.environ.get("AZURE_SEARCH_API_KEY")
-    search_endpoint=os.environ.get("AZURE_SEARCH_ENDPOINT")
-    search_index=os.environ.get("AZURE_SEARCH_INDEX")
-    search_semantic_configuration=os.environ.get("AZURE_SEARCH_SEMANTIC_CONFIGURATION")
-    if (search_endpoint is not None and search_index is not None and search_key is not None and search_semantic_configuration is not None):
-        search_credential = AzureKeyCredential(search_key)
-        search_client = SearchClient(search_endpoint, search_index, search_credential, user_agent="RTMiddleTier")
-    else:
-        logger.warning("Azure AI Search is not configured")
 
     # Register the Azure Communication Services
     acs_source_number = os.environ.get("ACS_SOURCE_NUMBER")
@@ -81,9 +68,8 @@ async def create_app():
     rtmt.system_message = system_prompt
 
     # Register the tools for function calling
-    if search_client is not None and search_semantic_configuration is not None:
-        rtmt.tools["search"] = search_tool(search_client, search_semantic_configuration)
-        rtmt.tools["report_grounding"] = report_grounding_tool(search_client)
+    rtmt.tools["search"] = search_tool()
+    rtmt.tools["report_grounding"] = report_grounding_tool()
 
     # Define the WebSocket handler for the Web Frontend
     async def websocket_handler(request: web.Request):

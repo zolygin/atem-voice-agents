@@ -7,7 +7,7 @@
 - **Azure Communication Services**: For voice and communication features.
 - **Azure Container Apps**: Hosting for the application.
 - **Azure Container Registry**: For Docker image management.
-- **Azure AI Search**: For data indexing and retrieval (RAG).
+- **Supabase (PostgreSQL with pgvector)**: For data indexing and retrieval (RAG).
 - **Bicep**: Infrastructure as Code for Azure deployments.
 - **Docker**: Containerization of the application.
 

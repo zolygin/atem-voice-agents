@@ -7,7 +7,8 @@
     - `azure.py`: Azure-specific utilities.
     - `helpers.py`: General utility functions.
     - `rtmt.py`: Real-time media transport logic.
-    - `src/app/backend/tools/rag/ai_search.py`: Integration with Azure AI Search for RAG.
+    - `src/app/backend/tools/rag/supabase_rag.py`: Integration with Supabase for RAG.
+    - `src/app/backend/tools/rag/rag_tools.py`: Generic RAG tool wrapper.
 - **`src/app/static/`**: Frontend assets including `index.html`, `app.js`, and `style.css`.
 - **`infra/`**: Bicep templates for deploying Azure infrastructure:
     - `infra/main.bicep`: Main deployment file.
@@ -17,14 +18,15 @@
 - **`scripts/`**: Utility scripts, e.g., `upload_data.sh` for uploading data to AI Search.
 
 ## Data Flow
-1. PDF documents in `data/` are uploaded and indexed into Azure AI Search using `scripts/upload_data.sh` and `infra/definitions/` (for indexer, datasource, skillset definitions).
+1. PDF documents in `data/` are processed, embedded, and stored in the Supabase `documents` table.
 2. The Python backend (`src/app/app.py` and `src/app/backend/`) interacts with Azure Communication Services for voice input/output and OpenAI for AI processing.
-3. Azure AI Search is queried by the RAG tool (`src/app/backend/tools/rag/ai_search.py`) to retrieve relevant information based on user queries.
+3. Supabase is queried by the RAG tool (`src/app/backend/tools/rag/rag_tools.py` and `src/app/backend/tools/rag/supabase_rag.py`) to retrieve relevant information based on user queries.
 4. The frontend (`src/app/static/`) provides the user interface for interaction.
 
 ## External Dependencies
 - **Python Packages**: Listed in `src/app/requirements.txt`.
-- **Azure Services**: OpenAI, Communication Services, Container Apps, Container Registry, AI Search, Application Insights, Log Analytics.
+- **Azure Services**: OpenAI, Communication Services, Container Apps, Container Registry, Application Insights, Log Analytics.
+- **Supabase**: PostgreSQL database with `pgvector` extension for RAG.
 
 ## Recent Significant Changes
 - Initial project setup on a new machine.
