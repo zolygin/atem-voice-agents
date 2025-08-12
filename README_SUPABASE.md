@@ -1,151 +1,239 @@
-# Supabase Integration Guide
+# ATEM Voice Agents with Supabase RAG Integration
 
-This guide explains how to integrate Supabase as a replacement for Azure AI Search in the Realtime Call Center Solution Accelerator.
+This document explains how the Supabase RAG (Retrieval Augmented Generation) integration works in the ATEM Voice Agents project, replacing the original Azure AI Search implementation.
 
-## Prerequisites
+## Architecture Overview
 
-1. A Supabase project with `pgvector` extension enabled
-2. Supabase URL and Service Role Key
-3. OpenAI API key for embedding generation
+The voice agent uses Supabase as its knowledge base for RAG operations instead of Azure AI Search. The integration includes:
 
-## Setup Instructions
+1. **Supabase Database**: Stores document chunks with vector embeddings
+2. **RPC Functions**: Custom PostgreSQL functions for vector similarity search
+3. **Python Backend**: Uses Supabase client and OpenAI for embedding generation
+4. **Voice Agent Tools**: `search` and `report_grounding` tools integrated with Supabase
 
-### 1. Environment Variables
+## Key Components
 
-Set the following environment variables:
+### 1. Supabase Database Structure
 
-```bash
-export SUPABASE_URL="your-supabase-url"
-export SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
-export OPENAI_API_KEY="your-openai-api-key"
-```
+**Table: `atem_voice_documents`**
+- `id` (bigint): Primary key
+- `content` (text): Document content/chunk
+- `metadata` (jsonb): Additional metadata (title, source, etc.)
+- `embedding` (vector): 3072-dimensional vector embedding
 
-Or use `azd` to set them:
-
-```bash
-azd env set SUPABASE_URL "your-supabase-url"
-azd env set SUPABASE_SERVICE_ROLE_KEY "your-supabase-service-role-key"
-```
-
-### 2. Supabase Database Setup
-
-Create the required table structure in your Supabase database:
-
+**RPC Function: `match_atem_voice_documents`**
 ```sql
--- Enable pgvector extension
-create extension if not exists vector;
-
--- Create documents table
-create table documents (
-    id text primary key,
-    title text,
-    content text,
-    embedding vector(3072),
-    metadata jsonb,
-    created_at timestamp with time zone default now()
-);
-
--- Create index for vector similarity search
-create index on documents using ivfflat (embedding vector_cosine_ops);
-
--- Create RPC function for similarity search
-create or replace function match_documents (
-    query_embedding vector(3072),
-    match_threshold float,
-    match_count int
+CREATE OR REPLACE FUNCTION public.match_atem_voice_documents(
+    query_embedding vector,
+    match_count integer DEFAULT NULL::integer,
+    filter jsonb DEFAULT '{}'::jsonb
 )
-returns table (
-    id text,
-    title text,
+RETURNS TABLE(
+    id bigint,
     content text,
     metadata jsonb,
-    similarity float
+    similarity double precision
 )
-language sql
-as $$
-    select
-        documents.id,
-        documents.title,
-        documents.content,
-        documents.metadata,
-        1 - (documents.embedding <=> query_embedding) as similarity
-    from documents
-    where 1 - (documents.embedding <=> query_embedding) > match_threshold
-    order by documents.embedding <=> query_embedding
-    limit match_count;
-$$;
+LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN QUERY
+    SELECT
+        id,
+        content,
+        metadata,
+        1 - (atem_voice_documents.embedding <=> query_embedding) as similarity
+    FROM atem_voice_documents
+    WHERE metadata @> filter
+    ORDER BY atem_voice_documents.embedding <=> query_embedding
+    LIMIT match_count;
+END;
+$function$;
 ```
 
-### 3. Data Ingestion
+### 2. Python Implementation
 
-Run the data ingestion script to process PDF documents and store them in Supabase:
+**File: `src/app/backend/tools/rag/supabase_rag.py`**
 
+Key features:
+- **Embedding Generation**: Uses OpenAI `text-embedding-3-large` model (3072 dimensions)
+- **Vector Search**: Calls `match_atem_voice_documents` RPC function
+- **Fallback Handling**: Uses dummy embeddings if OpenAI fails
+- **Tool Integration**: Provides `search` and `report_grounding` tools
+
+### 3. Environment Variables
+
+Required environment variables:
 ```bash
-python scripts/ingest_data_to_supabase.py
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+AZURE_OPENAI_ENDPOINT=your_openai_endpoint
+AZURE_OPENAI_API_KEY=your_openai_api_key
+AZURE_OPENAI_COMPLETION_DEPLOYMENT_NAME=your_deployment_name
 ```
 
-### 4. Deployment
+## How It Works
 
-Deploy the application using `azd`:
+### 1. Query Processing Flow
 
-```bash
-azd up
+1. **Voice Input**: User asks a question
+2. **Embedding Generation**: Query converted to 3072-dim vector using OpenAI
+3. **Vector Search**: `match_atem_voice_documents` RPC function finds similar documents
+4. **Result Formatting**: Results formatted for LLM context
+5. **LLM Response**: OpenAI generates response using retrieved context
+
+### 2. Search Tool (`search`)
+
+```python
+# Called by LLM when it needs to search knowledge base
+result = supabase.rpc('match_atem_voice_documents', {
+    'query_embedding': generated_embedding,
+    'match_count': 5,
+    'filter': {}
+}).execute()
 ```
 
-## Key Changes Made
+### 3. Grounding Tool (`report_grounding`)
 
-### Infrastructure (Bicep)
-- Added `supabaseUrl` and `supabaseServiceRoleKey` parameters to `infra/main.bicep`
-- Updated `infra/core/app/web.bicep` to pass Supabase environment variables to the container
-
-### Configuration
-- Updated `azure.yaml` to include Supabase environment variables
-- Modified `azd-hooks/deploy.sh` to handle Supabase parameters and validation
-
-### Application Code
-- Created `src/app/backend/tools/rag/supabase_rag.py` with Supabase-based RAG implementation
-- Updated `src/app/app.py` to use Supabase RAG tools instead of Azure AI Search
-- Added Supabase dependencies to `src/app/requirements.txt`
-
-### Data Processing
-- Created `scripts/ingest_data_to_supabase.py` for PDF processing and vector embedding
+```python
+# Called by LLM to cite sources
+response = supabase.table('atem_voice_documents').select('*').in_('id', sources).execute()
+```
 
 ## Testing
 
-After deployment, verify that the Supabase integration is working:
+### Integration Tests
 
-1. Check that environment variables are properly set in the container
-2. Test the search functionality through the voice agent
-3. Verify that document grounding works correctly
+Run the integration test to verify all components work together:
+```bash
+python scripts/test_voice_agent_integration.py
+```
+
+### Manual Testing
+
+1. **Test Supabase Connection**:
+   ```bash
+   python scripts/test_supabase_connection.py
+   ```
+
+2. **Test Search Functionality**:
+   ```bash
+   python scripts/test_atem_voice_search.py
+   ```
+
+3. **Test Voice Agent**:
+   ```bash
+   cd src/app
+   python app.py
+   ```
+
+## Deployment
+
+The application is configured to use Supabase RAG automatically when the required environment variables are present. The Azure AI Search code remains as legacy but is not used when Supabase is configured.
+
+### Azure Deployment Configuration
+
+The `azd` deployment automatically sets the required environment variables:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+These are configured in:
+- `azure.yaml` (environment variables)
+- `infra/main.bicep` (parameter passing)
+- `infra/core/app/web.bicep` (container environment)
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **"Supabase URL and Service Role Key must be provided"**
-   - Ensure environment variables are set correctly
-   - Check that `azd` environment variables are configured
+1. **OpenAI API Key Invalid**:
+   - Update `AZURE_OPENAI_API_KEY` in environment
+   - Fallback to dummy embeddings works for testing
 
-2. **Vector search not returning results**
-   - Verify that the `match_documents` RPC function exists
-   - Check that documents have been properly ingested with embeddings
+2. **Supabase Connection Failed**:
+   - Verify `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
+   - Check Supabase project status and network access
 
-3. **Connection errors**
-   - Verify Supabase URL and credentials
-   - Check network connectivity from the container to Supabase
+3. **No Search Results**:
+   - Verify documents exist in `atem_voice_documents` table
+   - Check that embeddings are properly generated and stored
 
-### Debugging Steps
+### Debugging Commands
 
-1. Check container logs:
-   ```bash
-   az containerapp logs show --name <container-app-name> --resource-group <resource-group>
-   ```
+```bash
+# Check Supabase table contents
+python -c "from supabase import create_client; import os; s=create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_ROLE_KEY']); print(s.table('atem_voice_documents').select('id', 'content').limit(3).execute())"
 
-2. Test Supabase connection locally:
-   ```bash
-   python -c "from supabase import create_client; client = create_client('url', 'key'); print(client.table('documents').select('*').execute())"
-   ```
+# Test RPC function directly
+python -c "from supabase import create_client; import os; s=create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_ROLE_KEY']); print(s.rpc('match_atem_voice_documents', {'query_embedding': [0.1]*3072, 'match_count': 2}).execute())"
+```
 
-3. Verify environment variables in the container:
-   ```bash
-   az containerapp exec --name <container-app-name> --resource-group <resource-group> --command "printenv"
+## Data Management
+
+### Ingesting New Documents
+
+Use the ingestion script to add new documents:
+```bash
+python scripts/ingest_data_to_supabase.py
+```
+
+The script:
+1. Reads documents from `data/` directory
+2. Chunks content appropriately
+3. Generates embeddings using OpenAI
+4. Stores in `atem_voice_documents` table
+
+### Updating Existing Data
+
+To refresh embeddings or update content:
+1. Clear existing data: `DELETE FROM atem_voice_documents;`
+2. Re-run ingestion script
+3. Or update individual records as needed
+
+## Performance Considerations
+
+### Vector Search Optimization
+
+- **Indexing**: Ensure `pgvector` indexes are created on embedding column
+- **Dimensions**: Using 3072-dim embeddings (text-embedding-3-large)
+- **Similarity**: Cosine similarity via `<=>` operator
+
+### Caching
+
+Consider implementing caching for:
+- Frequently accessed documents
+- Common query embeddings
+- Search results for repeated queries
+
+## Security
+
+### API Keys
+
+- **Supabase Service Role Key**: Used for backend operations (has elevated privileges)
+- **OpenAI API Key**: Used for embedding generation
+- Store securely in environment variables or Azure Key Vault
+
+### Data Access
+
+- RPC functions limit data exposure
+- Row-level security can be added if needed
+- Metadata filtering available through JSONB queries
+
+## Future Enhancements
+
+### Planned Improvements
+
+1. **Better Error Handling**: More robust fallback mechanisms
+2. **Caching Layer**: Redis or in-memory caching for frequent queries
+3. **Advanced Filtering**: More sophisticated metadata filtering
+4. **Batch Operations**: Bulk ingestion and updates
+5. **Monitoring**: Better logging and performance metrics
+
+### Alternative Embedding Models
+
+Support for different embedding models:
+- `text-embedding-3-small` (1536 dimensions)
+- `text-embedding-ada-002` (1536 dimensions)
+- Custom embedding services
+
+Update the dimension in the RPC function and embedding generation code accordingly.
