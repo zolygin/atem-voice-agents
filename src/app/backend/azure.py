@@ -12,8 +12,8 @@ def get_azure_credentials(tenant_id: str | None = None) -> AzureDeveloperCliCred
         print("Using DefaultAzureCredential")
         credentials = DefaultAzureCredential()
     
-    # Warm up before we start getting requests
-    credentials.get_token("https://search.azure.com/.default")
+    # Don't warm up Azure Search token since we're using Supabase instead
+    # credentials.get_token("https://search.azure.com/.default")
     return credentials
 
 
@@ -27,9 +27,13 @@ async def fetch_prompt_from_azure_storage(container_name: str, file_name: str) -
         raise ValueError("Missing 'AZURE_STORAGE_CONNECTION_STRING' environment variable.")
 
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    container_client = blob_service_client.get_container_client(container_name)
-    blob_client = container_client.get_blob_client(file_name)
+    try:
+        container_client = blob_service_client.get_container_client(container_name)
+        blob_client = container_client.get_blob_client(file_name)
 
-    blob_data = await blob_client.download_blob()
-    content = await blob_data.readall()
-    return content.decode("utf-8")
+        blob_data = await blob_client.download_blob()
+        content = await blob_data.readall()
+        return content.decode("utf-8")
+    finally:
+        # Close the blob service client to prevent resource leaks
+        await blob_service_client.close()

@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 from pathlib import Path
 from typing import Optional
 from aiohttp import web
@@ -8,7 +9,6 @@ from backend.tools.rag.supabase_rag import report_grounding_tool, search_tool
 from backend.helpers import load_prompt_from_markdown
 from backend.rtmt import RTMiddleTier
 from backend.azure import get_azure_credentials, fetch_prompt_from_azure_storage
-from backend.rtmt import RTMiddleTier
 from backend.acs import AcsCaller
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.aio import SearchClient
@@ -88,28 +88,44 @@ async def create_app():
     async def websocket_handler(request: web.Request):
         ws = web.WebSocketResponse()
         await ws.prepare(request)
+        print(f"WebSocket connection established from {request.remote}")
         try:
             await rtmt.forward_messages(ws, False)
+        except asyncio.CancelledError:
+            print("WebSocket handler cancelled")
         except Exception as e:
             print(f"Error in websocket_handler: {e}")
         finally:
             if not ws.closed:
-                await ws.close()
-            print("Web frontend WebSocket connection closed")
+                try:
+                    await ws.close()
+                    print("Web frontend WebSocket connection closed cleanly")
+                except Exception as e:
+                    print(f"Error closing WebSocket: {e}")
+            else:
+                print("Web frontend WebSocket connection already closed")
         return ws
 
     # Define the WebSocket handler for the Azure Communication Services Audio Stream
     async def websocket_handler_acs(request: web.Request):
         ws = web.WebSocketResponse()
         await ws.prepare(request)
+        print(f"ACS WebSocket connection established from {request.remote}")
         try:
             await rtmt.forward_messages(ws, True)
+        except asyncio.CancelledError:
+            print("ACS WebSocket handler cancelled")
         except Exception as e:
             print(f"Error in websocket_handler_acs: {e}")
         finally:
             if not ws.closed:
-                await ws.close()
-            print("ACS WebSocket connection closed")
+                try:
+                    await ws.close()
+                    print("ACS WebSocket connection closed cleanly")
+                except Exception as e:
+                    print(f"Error closing ACS WebSocket: {e}")
+            else:
+                print("ACS WebSocket connection already closed")
         return ws
 
     # Serve static files and index.html
@@ -153,6 +169,12 @@ async def create_app():
         app.router.add_post("/acs", caller.outbound_call_handler)
         app.router.add_post("/acs/incoming", caller.inbound_call_handler)
 
+    return app
+
+async def create_app_factory():
+    """Factory function for Gunicorn to create the aiohttp application."""
+    # Create and return the application instance directly
+    app = await create_app()
     return app
 
 if __name__ == "__main__":

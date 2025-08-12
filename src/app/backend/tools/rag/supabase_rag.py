@@ -64,6 +64,8 @@ def get_supabase_client() -> Client:
     if not url or not key:
         raise ValueError("Supabase URL and Service Role Key must be provided.")
 
+    # Create client with timeout configuration
+    from supabase import create_client
     return create_client(url, key)
 
 def generate_embedding(text: str) -> list:

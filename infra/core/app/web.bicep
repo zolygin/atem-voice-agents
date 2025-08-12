@@ -1,7 +1,6 @@
 param name string
 param location string = resourceGroup().location
 param tags object = {}
-param aiSearchName string
 param storageAccountName string
 param identityName string
 param applicationInsightsName string
@@ -132,10 +131,7 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
   }
 }
 
-resource searchService 'Microsoft.Search/searchServices@2024-06-01-preview' existing = {
-  name: aiSearchName
-  scope: resourceGroup()
-}
+// Azure Search service reference removed since we're using Supabase instead
 
 resource account 'Microsoft.CognitiveServices/accounts@2022-10-01' existing = {
   name: openaiName

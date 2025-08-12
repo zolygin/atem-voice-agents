@@ -44,14 +44,14 @@ ENVIRONMENT_NAME=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsof
 IDENTITY_NAME=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsoft.ManagedIdentity/userAssignedIdentities" --query "[0].name" -o tsv)
 # Get the Azure subscription ID
 AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-# Get Azure Search service name
-AZURE_SEARCH_NAME=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsoft.Search/searchServices" --query "[0].name" -o tsv)
+# Get Azure Search service name (dummy values since we're using Supabase)
+AZURE_SEARCH_NAME="dummy-search"
 # Get the first index name from the Azure Search service
 AZURE_SEARCH_INDEX_NAME="voicerag-intvect"
 # Get the semantic configuration setting
 AZURE_SEARCH_SEMANTIC_CONFIGURATION="default"
-# Get Azure Search API key
-AZURE_SEARCH_API_KEY=$(az search admin-key show --service-name $AZURE_SEARCH_NAME --resource-group $RESOURCE_GROUP --query "primaryKey" -o tsv)
+# Get Azure Search API key (dummy since we're using Supabase)
+AZURE_SEARCH_API_KEY="dummy-key"
 # Get Azure Storage account name
 STORAGE_ACCOUNT_NAME=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsoft.Storage/storageAccounts" --query "[0].name" -o tsv)
 # Get the name of the Azure Communication Services instance
@@ -116,7 +116,7 @@ echo "deploying image: $IMAGE_NAME"
 # Deploy the container app
 ACA_NAME=callcenter$SERVICE_NAME
 URI=$(az deployment group create -g $RESOURCE_GROUP -f ./infra/core/app/web.bicep \
-          -p aiSearchName=$AZURE_SEARCH_NAME  -p storageAccountName=$STORAGE_ACCOUNT_NAME -p name=$ACA_NAME \
+          -p storageAccountName=$STORAGE_ACCOUNT_NAME -p name=$ACA_NAME \
           -p location=$LOCATION -p containerAppsEnvironmentName=$ENVIRONMENT_NAME \
           -p containerRegistryName=$AZURE_CONTAINER_REGISTRY_NAME -p applicationInsightsName=$APPINSIGHTS_NAME \
           -p communicationServiceName=$AZURE_COMMUNICATION_SERVICES_NAME -p serviceName=$SERVICE_NAME  \
@@ -135,8 +135,6 @@ CONTAINER_APP_HOSTNAME=$(az containerapp show --name $ACA_NAME --resource-group 
 az containerapp update --name $ACA_NAME --resource-group $RESOURCE_GROUP \
 --set-env-vars ACS_CALLBACK_PATH="https://$CONTAINER_APP_HOSTNAME/acs" \
                ACS_MEDIA_STREAMING_WEBSOCKET_PATH="wss://$CONTAINER_APP_HOSTNAME/realtime-acs" \
-               AZURE_SEARCH_API_KEY="$AZURE_SEARCH_API_KEY" AZURE_SEARCH_INDEX="$AZURE_SEARCH_INDEX_NAME"  \
-               AZURE_SEARCH_SEMANTIC_CONFIGURATION="$AZURE_SEARCH_SEMANTIC_CONFIGURATION" \
                SUPABASE_URL="$SUPABASE_URL" SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
                AZURE_OPENAI_API_KEY="$AZURE_OPENAI_API_KEY" AZURE_OPENAI_VERSION="$AZURE_OPENAI_VERSION"
 
