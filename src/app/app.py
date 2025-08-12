@@ -88,14 +88,28 @@ async def create_app():
     async def websocket_handler(request: web.Request):
         ws = web.WebSocketResponse()
         await ws.prepare(request)
-        await rtmt.forward_messages(ws, False)
+        try:
+            await rtmt.forward_messages(ws, False)
+        except Exception as e:
+            print(f"Error in websocket_handler: {e}")
+        finally:
+            if not ws.closed:
+                await ws.close()
+            print("Web frontend WebSocket connection closed")
         return ws
 
     # Define the WebSocket handler for the Azure Communication Services Audio Stream
     async def websocket_handler_acs(request: web.Request):
         ws = web.WebSocketResponse()
         await ws.prepare(request)
-        await rtmt.forward_messages(ws, True)
+        try:
+            await rtmt.forward_messages(ws, True)
+        except Exception as e:
+            print(f"Error in websocket_handler_acs: {e}")
+        finally:
+            if not ws.closed:
+                await ws.close()
+            print("ACS WebSocket connection closed")
         return ws
 
     # Serve static files and index.html

@@ -97,6 +97,7 @@ async def _search_tool(
     """Search the knowledge base using Supabase vector search."""
     print(f"Searching for '{args['query']}' in the knowledge base.")
     
+    supabase = None
     try:
         supabase = get_supabase_client()
         
@@ -148,6 +149,10 @@ async def _search_tool(
     except Exception as e:
         print(f"Error during Supabase search: {e}")
         return ToolResult(f"Error searching knowledge base: {str(e)}", ToolResultDirection.TO_SERVER)
+    finally:
+        # Clean up Supabase client if needed
+        if supabase:
+            pass  # Supabase client doesn't require explicit cleanup
 
 async def _report_grounding_tool(args: Any) -> ToolResult:
     """Report use of sources from the knowledge base."""
@@ -155,6 +160,7 @@ async def _report_grounding_tool(args: Any) -> ToolResult:
     list_str = " OR ".join(sources)
     print(f"Grounding source: {list_str}")
     
+    supabase = None
     try:
         supabase = get_supabase_client()
         
@@ -175,6 +181,10 @@ async def _report_grounding_tool(args: Any) -> ToolResult:
     except Exception as e:
         print(f"Error during grounding: {e}")
         return ToolResult(f"Error reporting grounding: {str(e)}", ToolResultDirection.TO_CLIENT)
+    finally:
+        # Clean up Supabase client if needed
+        if supabase:
+            pass  # Supabase client doesn't require explicit cleanup
 
 def search_tool() -> Tool:
     """Create and return the search tool for Supabase RAG."""
