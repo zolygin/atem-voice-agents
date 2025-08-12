@@ -123,6 +123,7 @@ URI=$(az deployment group create -g $RESOURCE_GROUP -f ./infra/core/app/web.bice
           -p communicationServicePhoneNumber=$AZURE_COMMUNICATION_SERVICES_PHONE_NUMBER \
           -p openaiName=$OPENAI_NAME -p identityName=$IDENTITY_NAME -p imageName=$IMAGE_NAME \
           -p supabaseUrl="$SUPABASE_URL" -p supabaseServiceRoleKey="$SUPABASE_SERVICE_ROLE_KEY" \
+          -p openaiApiKey="$AZURE_OPENAI_API_KEY" -p openaiVersion="$AZURE_OPENAI_VERSION" \
           --query properties.outputs.uri.value)
 
 echo "updating container app settings"
@@ -136,7 +137,8 @@ az containerapp update --name $ACA_NAME --resource-group $RESOURCE_GROUP \
                ACS_MEDIA_STREAMING_WEBSOCKET_PATH="wss://$CONTAINER_APP_HOSTNAME/realtime-acs" \
                AZURE_SEARCH_API_KEY="$AZURE_SEARCH_API_KEY" AZURE_SEARCH_INDEX="$AZURE_SEARCH_INDEX_NAME"  \
                AZURE_SEARCH_SEMANTIC_CONFIGURATION="$AZURE_SEARCH_SEMANTIC_CONFIGURATION" \
-               SUPABASE_URL="$SUPABASE_URL" SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY"
+               SUPABASE_URL="$SUPABASE_URL" SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+               AZURE_OPENAI_API_KEY="$AZURE_OPENAI_API_KEY" AZURE_OPENAI_VERSION="$AZURE_OPENAI_VERSION"
 
 # Configuration of Azure AI search index
 echo "Executing upload_data.sh to upload documents to Azure blob storage"

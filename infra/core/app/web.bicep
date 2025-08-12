@@ -14,6 +14,8 @@ param imageName string
 param openaiName string
 param supabaseUrl string
 param supabaseServiceRoleKey string
+param openaiApiKey string
+param openaiVersion string = '2024-10-01-preview'
 
 resource userIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
   name: identityName
@@ -40,6 +42,12 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
         {
           server: '${containerRegistry.name}.azurecr.io'
           identity: userIdentity.id
+        }
+      ]
+      secrets: [
+        {
+          name: 'openai-api-key'
+          value: openaiApiKey
         }
       ]
     }
@@ -100,6 +108,14 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
             {
               name: 'SUPABASE_SERVICE_ROLE_KEY'
               value: supabaseServiceRoleKey
+            }
+            {
+              name: 'AZURE_OPENAI_API_KEY'
+              secretRef: 'openai-api-key'
+            }
+            {
+              name: 'AZURE_OPENAI_VERSION'
+              value: openaiVersion
             }
           ]
           resources: {
