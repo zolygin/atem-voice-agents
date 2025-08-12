@@ -5,13 +5,13 @@ import numpy as np
 from supabase import create_client, Client
 from backend.tools.tools import Tool, ToolResult, ToolResultDirection
 
-# Import OpenAI for embedding generation
+# Import Azure OpenAI for embedding generation
 try:
-    from openai import OpenAI
+    from openai import AzureOpenAI
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
-    print("OpenAI library not available for embeddings")
+    print("Azure OpenAI library not available for embeddings")
 
 KEY_PATTERN = re.compile(r'^[a-zA-Z0-9_=\-]+$')
 
@@ -67,19 +67,28 @@ def get_supabase_client() -> Client:
     return create_client(url, key)
 
 def generate_embedding(text: str) -> list:
-    """Generate embedding for the given text using OpenAI."""
+    """Generate embedding for the given text using Azure OpenAI."""
     if not OPENAI_AVAILABLE:
-        raise ValueError("OpenAI library not available for embedding generation")
+        raise ValueError("Azure OpenAI library not available for embedding generation")
     
     try:
-        openai_client = OpenAI(api_key=os.environ.get("AZURE_OPENAI_API_KEY"))
+        # Use Azure OpenAI client with proper Azure configuration
+        openai_client = AzureOpenAI(
+            api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+            api_version=os.environ.get("AZURE_OPENAI_VERSION", "2024-10-01-preview"),
+            azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT")
+        )
+        
+        # Use the deployment name for Azure OpenAI
+        deployment_name = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
+        
         response = openai_client.embeddings.create(
             input=text,
-            model="text-embedding-3-large"
+            model=deployment_name
         )
         return response.data[0].embedding
     except Exception as e:
-        print(f"Error generating embedding: {e}")
+        print(f"Error generating embedding with Azure OpenAI: {e}")
         # Return a dummy embedding for testing
         return [0.1] * 3072
 

@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
 import os
 from supabase import create_client
-from openai import OpenAI
+from openai import AzureOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def generate_embedding(text: str) -> list:
-    """Generate embedding for the given text using OpenAI."""
+    """Generate embedding for the given text using Azure OpenAI."""
     try:
-        openai_client = OpenAI(api_key=os.environ.get("AZURE_OPENAI_API_KEY"))
+        # Use Azure OpenAI client with proper Azure configuration
+        openai_client = AzureOpenAI(
+            api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+            api_version=os.environ.get("AZURE_OPENAI_VERSION", "2024-10-01-preview"),
+            azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT")
+        )
+        
+        # Use the deployment name for Azure OpenAI
+        deployment_name = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
+        
         response = openai_client.embeddings.create(
             input=text,
-            model="text-embedding-3-large"
+            model=deployment_name
         )
         return response.data[0].embedding
     except Exception as e:
-        print(f"Error generating embedding: {e}")
+        print(f"Error generating embedding with Azure OpenAI: {e}")
         # Return a dummy embedding for testing
         return [0.1] * 3072
 
