@@ -47,3 +47,9 @@
 - [ ] Implement caching for better performance
 - [ ] Add monitoring and logging for production use
 - [ ] Consider advanced filtering and metadata search capabilities
+
+## Recent Additions
+- [x] **Created comprehensive deployment guide** (`cline_docs/deployment_guide.md`)
+- [x] **Documented working container app deployment** with proper WebSocket cleanup
+- [x] **Resolved authentication issues** preventing application startup
+- [x] **Fixed hanging WebSocket connections** that caused application unresponsiveness

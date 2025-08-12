@@ -32,6 +32,10 @@
 - Creation of `cline_docs` for project documentation.
 - Integration of Supabase as replacement for Azure AI Search.
 - Added Supabase RAG implementation and data ingestion pipeline.
+- **Fixed critical Azure authentication issue** preventing application startup.
+- **Resolved WebSocket hanging problem** with proper connection cleanup.
+- **Created comprehensive deployment guide** documenting working configuration.
+- **Verified stable container app deployment** with all services functioning.
 
 ## User Feedback Integration and Its Impact on Development
 - (No user feedback integrated yet)
