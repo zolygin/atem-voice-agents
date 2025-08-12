@@ -61,10 +61,25 @@ ACS_CONNECTION_STRING=$(az communication list-key --name $AZURE_COMMUNICATION_SE
 # Get the phone number of the Azure Communication Services instance
 AZURE_COMMUNICATION_SERVICES_PHONE_NUMBER=$(az communication phonenumber list --connection-string $ACS_CONNECTION_STRING --query "[0].phoneNumber" -o tsv)
 
+# Get Supabase environment variables
+SUPABASE_URL=${SUPABASE_URL:-""}
+SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-""}
+
 # Check if phone number is empty and set default value if it is
 if [ -z "$AZURE_COMMUNICATION_SERVICES_PHONE_NUMBER" ]; then
     AZURE_COMMUNICATION_SERVICES_PHONE_NUMBER="Manualupdate"
     echo "Phone number is empty, the number needs to be acquired manually"
+fi
+
+# Check if Supabase variables are set
+if [ -z "$SUPABASE_URL" ]; then
+  echo "SUPABASE_URL is not set. Please set it in your environment or .env file."
+  exit 1
+fi
+
+if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+  echo "SUPABASE_SERVICE_ROLE_KEY is not set. Please set it in your environment or .env file."
+  exit 1
 fi
 
 echo "container registry name: $AZURE_CONTAINER_REGISTRY_NAME"
@@ -78,6 +93,7 @@ echo "communication service phone number: $AZURE_COMMUNICATION_SERVICES_PHONE_NU
 echo "storage account name: $STORAGE_ACCOUNT_NAME"
 echo "azure search name: $AZURE_SEARCH_NAME"
 echo "azure search index name: $AZURE_SEARCH_INDEX_NAME"
+echo "supabase url: $SUPABASE_URL"
 
 # Check if the container app already exists
 CONTAINER_APP_EXISTS=$(az resource list -g $RESOURCE_GROUP --resource-type "Microsoft.App/containerApps" --query "[?contains(name, '$SERVICE_NAME')].id" -o tsv)
@@ -106,6 +122,7 @@ URI=$(az deployment group create -g $RESOURCE_GROUP -f ./infra/core/app/web.bice
           -p communicationServiceName=$AZURE_COMMUNICATION_SERVICES_NAME -p serviceName=$SERVICE_NAME  \
           -p communicationServicePhoneNumber=$AZURE_COMMUNICATION_SERVICES_PHONE_NUMBER \
           -p openaiName=$OPENAI_NAME -p identityName=$IDENTITY_NAME -p imageName=$IMAGE_NAME \
+          -p supabaseUrl="$SUPABASE_URL" -p supabaseServiceRoleKey="$SUPABASE_SERVICE_ROLE_KEY" \
           --query properties.outputs.uri.value)
 
 echo "updating container app settings"
@@ -118,7 +135,8 @@ az containerapp update --name $ACA_NAME --resource-group $RESOURCE_GROUP \
 --set-env-vars ACS_CALLBACK_PATH="https://$CONTAINER_APP_HOSTNAME/acs" \
                ACS_MEDIA_STREAMING_WEBSOCKET_PATH="wss://$CONTAINER_APP_HOSTNAME/realtime-acs" \
                AZURE_SEARCH_API_KEY="$AZURE_SEARCH_API_KEY" AZURE_SEARCH_INDEX="$AZURE_SEARCH_INDEX_NAME"  \
-               AZURE_SEARCH_SEMANTIC_CONFIGURATION="$AZURE_SEARCH_SEMANTIC_CONFIGURATION"
+               AZURE_SEARCH_SEMANTIC_CONFIGURATION="$AZURE_SEARCH_SEMANTIC_CONFIGURATION" \
+               SUPABASE_URL="$SUPABASE_URL" SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY"
 
 # Configuration of Azure AI search index
 echo "Executing upload_data.sh to upload documents to Azure blob storage"

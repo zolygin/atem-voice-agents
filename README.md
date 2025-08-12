@@ -40,6 +40,15 @@ azd auth login
 azd up
 ```
 
+#### Supabase Configuration
+
+This version uses Supabase instead of Azure AI Search for the knowledge base. You need to set the following environment variables:
+
+```bash
+azd env set SUPABASE_URL "your-supabase-url"
+azd env set SUPABASE_SERVICE_ROLE_KEY "your-supabase-service-role-key"
+```
+
 #### Azure Communication Services
 
 At the moment, the configuration of Azure Communication Services phone number is not automated. So you will need to follow the following steps manually.
@@ -76,6 +85,14 @@ When successful, you will see the following output with the URL of the deployed 
 
 ```
 Deployment complete. Application URI: <YOUR_APP>.azurecontainerapps.io
+```
+
+### Ingest Data into Supabase
+
+After deployment, run the data ingestion script to process PDF documents and store them in Supabase:
+
+```bash
+python scripts/ingest_data_to_supabase.py
 ```
 
 ### Forward inbound calls to your application
@@ -174,13 +191,17 @@ You can customize the knowledge base and the system prompt of the bot.
 
 ### Knowledge base
 
-The knowledge base is stored in the `data` folder. After running the deployment script, the contents of this folder will be copied to the Azure Storage Account from where it is indexed and vectorized in the Azure AI Search service.
+The knowledge base is stored in the `data` folder and processed into Supabase with vector embeddings. After running the deployment script, the contents of this folder will be processed and stored in Supabase.
 
-To customize the knowledge base, you can add or remove files from the `data` folder and [re-run the deployment script](#deploy-the-application).
+To customize the knowledge base, you can add or remove files from the `data` folder and [re-run the data ingestion script](#ingest-data-into-supabase).
 
 ### System prompt
 
 By default, the [hardcoded system prompt](src/app/system_prompt.md) is used. You can customize the system prompt by placing a file named `system_prompt.md` in the `prompt` container of the Azure Storage Account. If this file exists, it will be used instead of the hardcoded system prompt.
+
+## Supabase Integration
+
+This version replaces Azure AI Search with Supabase for the knowledge base. See [README_SUPABASE.md](README_SUPABASE.md) for detailed integration documentation.
 
 ---
 

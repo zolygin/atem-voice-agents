@@ -12,6 +12,8 @@ param communicationServicePhoneNumber string
 param serviceName string = 'web'
 param imageName string
 param openaiName string
+param supabaseUrl string
+param supabaseServiceRoleKey string
 
 resource userIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
   name: identityName
@@ -88,24 +90,16 @@ resource app 'Microsoft.App/containerApps@2023-04-01-preview' = {
               value: 'Set by Deployment Script'
             }
             {
-              name: 'AZURE_SEARCH_API_KEY'
-              value: 'Set by Deployment Script'
-            }  
-            {
-              name: 'AZURE_SEARCH_ENDPOINT'
-              value: 'https://${searchService.name}.search.windows.net'
-            }  
-            {
-              name: 'AZURE_SEARCH_INDEX'
-              value: 'Set by Deployment Script'
-            }  
-            {
-              name: 'AZURE_SEARCH_SEMANTIC_CONFIGURATION'
-              value: 'Set by Deployment Script'
-            }   
-            {
               name: 'AZURE_STORAGE_CONNECTION_STRING'
               value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value}'
+            }
+            {
+              name: 'SUPABASE_URL'
+              value: supabaseUrl
+            }
+            {
+              name: 'SUPABASE_SERVICE_ROLE_KEY'
+              value: supabaseServiceRoleKey
             }
           ]
           resources: {
