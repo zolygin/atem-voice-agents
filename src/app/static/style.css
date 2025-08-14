@@ -1,90 +1,56 @@
-html,
-body {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
   font-family: 'Open Sans', Arial, sans-serif;
-  background-image: url('../static/abstract.jpg');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  color: #333;
-  text-align: center;
-}
-
-main.container {
+  background-color: #000000;
+  color: #fff;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  height: 50vh; /* Take up the bottom half */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-}
-
-#configButton {
-  position: fixed;
-  right: 10px;
-  top: 10px;
-  padding: 5px 10px; /* Adjust padding for smaller size */
-  font-size: 14px; /* Adjust font size for smaller text */
-}
-
-.sidebar {
-  display: none;
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 20rem;
-  height: 100%;
-  background-color: #f4f4f4;
+  max-width: 800px;
   padding: 20px;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
-  margin-top: 50px;
-  z-index: 9999; /* Bring the sidebar to the front */
 }
 
-.sidebar h2 {
-  color: #333;
-}
-
-div.main-container {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  height: 50vh;
-  margin-right: 100px;
-}
-
-article {
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 2rem;
-  border-radius: 10px;
-  max-width: 600px;
-  margin: 10px;
-}
-
-.separator {
-  width: 2px;
-  /* Thin bar */
-  background-color: #fff;
-  /* White color */
-  align-self: stretch;
-  /* Stretch to the height of the tallest article */
-  margin: 0 10px;
-  /* Space around the separator */
-  margin-bottom: 10px;
+.logo {
+  width: 150px;
+  height: 150px;
+  margin-bottom: 2rem;
 }
 
 h1 {
-  margin-bottom: 30px;
   color: #fff;
   font-weight: bold;
   font-size: 2.5em;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  color: #fff;
+  margin-bottom: 2rem;
+}
+
+.content-container {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
 }
 
 h3 {
   color: #000;
+  margin-bottom: 1.5rem;
 }
 
 .black-button {
@@ -94,122 +60,76 @@ h3 {
   cursor: pointer;
   padding: 10px 20px;
   font-size: 16px;
+  margin: 0 auto;
+  display: block;
 }
 
 .black-button:hover {
   background-color: #333 !important;
 }
 
-#toggleButton {
-  display: block;
-  margin: 20px auto;
-  padding: 10px 20px;
-  font-size: 16px;
-}
-
-form {
-  margin-top: 20px;
-}
-
-form input[type='text'],
-form button {
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto 10px;
-  display: block;
-}
-
-form input[type='text'] {
-  padding: 10px;
-  font-size: 16px;
-}
-
-form button {
-  padding: 10px;
-  font-size: 16px;
-}
-
-#statusMessage {
-  margin-top: 20px;
-  font-size: 16px;
-}
-
-#statusMessage:empty {
-  display: none;
-}
-
-#report {
-  margin-top: 30px;
-  text-align: left;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 15px;
-  border-radius: 5px;
-  max-width: 600px;
-  margin: 0 auto;
-  display: none;
-}
-
-#report:not(:empty) {
-  display: block;
-}
-
-.side-by-side {
-  flex: 1;
-  margin: 10px;
-}
-
-.flex-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 50vh; /* Take the top half */
-}
-
-.titles-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: max-content; /* Or a fixed width, if desired */
-  margin: 0 auto;
-  text-align: center;
-}
-
-.container {
-  flex: 1;
-}
-
-.logo-container {
-  position: absolute;
+#configButton {
+  position: fixed;
+  right: 10px;
   top: 10px;
-  left: 10px;
+  padding: 5px 10px;
+  font-size: 14px;
+  background-color: #000;
+  color: #fff;
+  border: 1px solid #fff;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.logo-container img {
-  width: 100px;
-  height: auto;
+#configButton:hover {
+  background-color: #333;
+}
+
+.sidebar {
+  display: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 20rem;
+  height: 100%;
+  background-color: #000;
+  padding: 20px;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  margin-top: 50px;
+  z-index: 9999;
+  color: #fff;
+}
+
+.sidebar h2 {
+  color: #fff;
 }
 
 .dropdown-container {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  padding: 10px;
-  text-align: center;
+  gap: 10px;
 }
 
 .dropdown-container label {
-  color: #333;
+  color: #fff;
 }
 
-.phone-number-display {
+#themeSelect {
+  background-color: #000;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 8px;
+  border-radius: 5px;
+  width: 200px;
+  cursor: pointer;
+}
+
+#themeSelect option {
+  background-color: #000;
+  color: #fff;
+}
+
+#statusMessage, #report {
   margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  font-size: 1.1rem;
-  color: #333;
 }
