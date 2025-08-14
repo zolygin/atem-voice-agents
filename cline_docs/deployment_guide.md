@@ -188,3 +188,21 @@ The application is confirmed working with:
 - **Environment Variables**: All required services properly configured
 
 This deployment guide reflects the exact steps and fixes that resulted in a stable, working voice agent application.
+
+## Commands to Build: 
+
+### Build the container:
+az acr build --subscription 77e72cdc-9061-49c1-84c4-96ee0f8410d0 --registry crtlaiebaxlkxfs --image callcenterapp:latest ./src/app --no-logs
+
+### Build the container app:
+az containerapp update --name callcenterapp --resource-group rg-azd-atem --image crtlaiebaxlkxfs.azurecr.io/callcenterapp:latest
+
+az acr build --subscription 77e72cdc-9061-49c1-84c4-96ee0f8410d0 --registry crtlaiebaxlkxfs --image callcenterapp:latest ./src/app --no-logs
+
+### Update the container app with a new image
+
+az acr build --subscription 77e72cdc-9061-49c1-84c4-96ee0f8410d0 --registry crtlaiebaxlkxfs --image callcenterapp:latest ./src/app --no-logs
+
+### Check logs
+
+az containerapp logs show --name callcenterapp --resource-group rg-azd-atem --tail 20

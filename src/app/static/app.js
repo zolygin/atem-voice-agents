@@ -1,30 +1,6 @@
 const toggleButton = document.getElementById('toggleButton');
-const callButton = document.getElementById('callButton');
 const statusMessage = document.getElementById('statusMessage');
 const reportDiv = document.getElementById('report');
-const sourcePhoneNumber = document.getElementById('sourcePhoneNumber');
-const incomingCallButton = document.getElementById('incomingCallButton');
-
-// Fetch and display source phone number
-document.addEventListener('DOMContentLoaded', fetchSourcePhoneNumber);
-async function fetchSourcePhoneNumber() {
-  try {
-    const response = await fetch('/source-phone-number');
-    const data = await response.json();
-    if (data.phoneNumber) {
-      sourcePhoneNumber.textContent = ` at: ${data.phoneNumber}`;
-      incomingCallButton.disabled = false;
-    } else {
-      incomingCallButton.disabled = true;
-    }
-  } catch (error) {
-    console.error('Error fetching source phone number:', error);
-    incomingCallButton.disabled = true;
-  }
-}
-
-// Call the function when the page loads
-document.addEventListener('DOMContentLoaded', fetchSourcePhoneNumber);
 
 let isRecording = false;
 let websocket = null;
@@ -99,7 +75,8 @@ async function startRecording() {
 
   mediaProcessor = audioContext.createScriptProcessor(4096, 1, 1);
   source.connect(mediaProcessor);
-  mediaProcessor.connect(audioContext.destination);
+  // Don't connect mediaProcessor to destination to prevent audio feedback
+  // mediaProcessor.connect(audioContext.destination);
 
   mediaProcessor.onaudioprocess = e => {
     const inputData = e.inputBuffer.getChannelData(0);
@@ -113,18 +90,6 @@ async function startRecording() {
       audio: base64Audio
     };
     websocket.send(JSON.stringify(audioCommand));
-
-    // Optional: Client-side VAD for immediate interruption handling (can be removed, as we now handle the "input_audio_buffer.speech_started" event)
-    // const isUserSpeaking = detectSpeech(inputData);
-    // if (isUserSpeaking && !speaking) {
-    //     speaking = true;
-    //     console.log('User started speaking');
-    //     // Stop assistant's audio playback
-    //     //stopAssistantAudio();
-    // } else if (!isUserSpeaking && speaking) {
-    //     speaking = false;
-    //     console.log('User stopped speaking');
-    // }
   };
 }
 
@@ -143,10 +108,24 @@ function stopRecording() {
     mediaStream = null;
   }
 
-  if (websocket) {
-    websocket.close();
-    websocket = null;
+  // Send interruption signal to backend to stop current AI response
+  if (websocket && websocket.readyState === WebSocket.OPEN) {
+    const interruptionCommand = {
+      type: 'response.cancel'
+    };
+    websocket.send(JSON.stringify(interruptionCommand));
+    
+    // Also clear any pending audio
+    stopAssistantAudio();
   }
+
+  // Close websocket after a short delay to ensure interruption is sent
+  setTimeout(() => {
+    if (websocket) {
+      websocket.close();
+      websocket = null;
+    }
+  }, 100);
 }
 
 function onToggleListening() {
@@ -157,21 +136,7 @@ function onToggleListening() {
   }
 }
 
-function onCallButton() {
-  const phonenumber = document.getElementById('phonenumber').value;
-
-  theUrl = `${window.location.origin}/call`;
-
-  fetch(theUrl, {
-    method: 'POST',
-    body: JSON.stringify({
-      number: phonenumber
-    })
-  });
-}
-
 toggleButton.addEventListener('click', onToggleListening);
-callButton.addEventListener('click', onCallButton);
 
 function handleWebSocketMessage(message) {
   switch (message.type) {
